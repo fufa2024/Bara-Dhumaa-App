@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="om"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Barumsa Bara Dhumaa</title>
+<style>
+:root{--bg:#faf7ff;--fg:#1f1b24;--card:#fff;--pri:#4a148c;--acc:#ffb300;--mut:#6b6475;--bd:#e4dcf0}
+body.dark{--bg:#14101a;--fg:#ece6f4;--card:#1e1826;--pri:#b388ff;--acc:#ffca28;--mut:#a79db5;--bd:#2f2640}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.65}
+header{position:sticky;top:0;background:var(--pri);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;z-index:5}
+body.dark header{color:#14101a}
+header h1{font-size:17px;margin:0;flex:1}
+header button{background:none;border:0;color:inherit;font-size:20px;padding:4px 8px}
+main{padding:14px;max-width:760px;margin:auto}
+.card{display:block;background:var(--card);border:1px solid var(--bd);border-left:5px solid var(--acc);border-radius:10px;padding:12px 14px;margin:10px 0;color:var(--fg);text-decoration:none}
+.card small{color:var(--mut)}
+input[type=search]{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font-size:16px}
+h2{color:var(--pri);margin-top:6px}h3{color:var(--pri);margin:18px 0 4px}
+ul{padding-left:20px}li{margin:4px 0}
+.ref{color:var(--mut);font-size:.9em}
+.nav{display:flex;justify-content:space-between;margin:24px 0}
+.nav a{color:var(--pri);font-weight:600;text-decoration:none}
+.bm{float:right;font-size:26px;background:none;border:0;color:var(--acc)}
+.cred{text-align:center;padding:14px 0;color:var(--mut);font-size:.9em}
+</style></head><body>
+<header><button id="back" onclick="history.back()" style="display:none">←</button><h1 id="ttl">Barumsa Bara Dhumaa</h1>
+<button onclick="location.hash='#search'">🔍</button><button onclick="location.hash='#marks'">★</button>
+<button onclick="fs(1)">A+</button><button onclick="fs(-1)">A−</button><button onclick="dm()">◐</button></header>
+<main id="app"></main>
+<script src="content.js"></script>
+<script>
+var S={};try{S=JSON.parse(localStorage.getItem('bd')||'{}')}catch(e){}
+S.marks=S.marks||[];S.size=S.size||17;S.dark=!!S.dark;
+function save(){try{localStorage.setItem('bd',JSON.stringify(S))}catch(e){}}
+function apply(){document.body.className=S.dark?'dark':'';document.body.style.fontSize=S.size+'px'}
+function fs(d){S.size=Math.min(28,Math.max(13,S.size+d*2));save();apply()}
+function dm(){S.dark=!S.dark;save();apply()}
+function strip(h){return h.replace(/<[^>]+>/g,' ')}
+function home(){
+ var h='<h2>Barumsa Bara Dhumaa</h2><p class="ref">Eschatology · Koleejii Macaafa Qulqulluu Daan</p>';
+ CHAPTERS.forEach(function(c){h+='<a class="card" href="#'+c.id+'"><b>'+c.title+'</b><br><small>'+c.sub+'</small></a>'});
+ h+='<a class="card" href="#credits"><b>Waa\'ee Kitaabichaa fi Gulaaltuu</b><br><small>About &amp; Editor</small></a>';
+ return h}
+function chap(id){
+ var i=CHAPTERS.findIndex(function(c){return c.id===id});if(i<0)return home();
+ var c=CHAPTERS[i],on=S.marks.indexOf(id)>=0;
+ var h='<button class="bm" onclick="mk(\''+id+'\')">'+(on?'★':'☆')+'</button><h2>'+c.title+'</h2>'+c.html+'<div class="nav"><span>'+
+ (i>0?'<a href="#'+CHAPTERS[i-1].id+'">← Duraa</a>':'')+'</span><span>'+(i<CHAPTERS.length-1?'<a href="#'+CHAPTERS[i+1].id+'">Itti aanu →</a>':'')+'</span></div>';
+ return h}
+function mk(id){var k=S.marks.indexOf(id);if(k>=0)S.marks.splice(k,1);else S.marks.push(id);save();route()}
+function marks(){var h='<h2>★ Mallattoo (Bookmarks)</h2>';
+ if(!S.marks.length)h+='<p>Mallattoon hin jiru. ☆ tuqi.</p>';
+ S.marks.forEach(function(id){var c=CHAPTERS.find(function(x){return x.id===id});if(c)h+='<a class="card" href="#'+id+'"><b>'+c.title+'</b></a>'});return h}
+function search(){
+ return '<h2>Barbaadi</h2><input type="search" id="q" placeholder="Jecha barbaadi..." oninput="doSearch(this.value)"><div id="res"></div>'}
+function doSearch(q){q=q.trim().toLowerCase();var r=document.getElementById('res'),h='';
+ if(q.length<2){r.innerHTML='';return}
+ CHAPTERS.forEach(function(c){var t=strip(c.html),l=t.toLowerCase(),p=l.indexOf(q);
+  if(p>=0||c.title.toLowerCase().indexOf(q)>=0){var s=t.substring(Math.max(0,p-40),p+90);
+   h+='<a class="card" href="#'+c.id+'"><b>'+c.title+'</b><br><small>…'+s+'…</small></a>'}});
+ r.innerHTML=h||'<p>Homaa hin argamne.</p>'}
+function credits(){return '<h2>Waa\'ee Kitaabichaa</h2>'+
+ '<p><b>Barumsa Bara Dhumaa (Eschatology)</b></p>'+
+ '<p>Madda barnootaa: Dan Bible College (Koleejii Macaafa Qulqulluu Daan), Hawassa, Ethiopia.</p>'+
+ '<p><b>Gulaaltuu (Editor): Fufa Basha Hordofa</b></p>'+
+ '<p>Appiin kun akka barnoota Macaafa Qulqulluu fi gargaarsa dubbisuutti qophaa\'e.</p>'+
+ '<p class="ref">Fuula Mul 22:20 — "Dafeen dhufa, Ameen Gooftaa Yesuus dafii koottu!"</p>'}
+function route(){
+ var id=(location.hash||'#home').slice(1),a=document.getElementById('app'),t='Barumsa Bara Dhumaa';
+ var h;
+ if(id==='home')h=home();else if(id==='search'){h=search();t='Barbaadi'}else if(id==='marks'){h=marks();t='Mallattoo'}
+ else if(id==='credits'){h=credits();t='Waa\'ee Kitaabichaa'}else{h=chap(id);t='Barumsa Bara Dhumaa'}
+ a.innerHTML=h+'<div class="cred">Gulaaltuu: Fufa Basha Hordofa · Dan Bible College</div>';
+ document.getElementById('ttl').textContent=t;
+ document.getElementById('back').style.display=id==='home'?'none':'inline';
+ window.scrollTo(0,0)}
+window.addEventListener('hashchange',route);apply();route();
+</script></body></html>
