@@ -15,10 +15,11 @@ header button{background:none;border:0;color:inherit;font-size:19px;padding:4px 
 main{padding:14px;max-width:760px;margin:auto}
 .card{display:block;background:var(--card);border:1px solid var(--bd);border-left:5px solid var(--acc);border-radius:10px;padding:12px 14px;margin:10px 0;color:var(--fg);text-decoration:none}
 .card small{color:var(--mut)}
-.book{display:block;background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden;margin:14px 0;color:var(--fg);text-decoration:none}
+.shelf{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.book{display:block;background:var(--card);border:1px solid var(--bd);border-radius:12px;overflow:hidden;color:var(--fg);text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .book img{width:100%;display:block}
-.book .bt{padding:10px 14px}.book small{color:var(--mut)}
-.nocover{background:linear-gradient(135deg,#4a148c,#1a0536);color:#ffca28;padding:34px 14px;text-align:center;font-size:20px;font-weight:700}
+.book .bt{padding:8px 10px;font-size:.85em;line-height:1.35}.book small{color:var(--mut)}
+.nocover{background:linear-gradient(135deg,#4a148c,#1a0536);color:#ffca28;padding:50px 10px;text-align:center;font-size:18px;font-weight:700;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center}
 input[type=search]{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font-size:16px}
 h2{color:var(--pri);margin-top:6px}h3{color:var(--pri);margin:18px 0 4px}
 ul{padding-left:20px}li{margin:4px 0}
@@ -26,8 +27,12 @@ ul{padding-left:20px}li{margin:4px 0}
 .nav{display:flex;justify-content:space-between;margin:24px 0}
 .nav a{color:var(--pri);font-weight:600;text-decoration:none}
 .bm{float:right;font-size:26px;background:none;border:0;color:var(--acc)}
+.pg{width:100%;border:1px solid var(--bd);border-radius:6px;margin:8px 0;background:#fff;display:block}
+#zm{position:fixed;inset:0;background:rgba(0,0,0,.93);overflow:auto;z-index:50;-webkit-overflow-scrolling:touch}
+#zm img{width:230%;max-width:none;display:block}
+#zx{position:fixed;top:10px;right:14px;z-index:60;background:#ffb300;color:#000;border:0;border-radius:20px;font-size:18px;padding:6px 14px}
 .cred{text-align:center;padding:14px 0;color:var(--mut);font-size:.9em}
-.cover img{width:100%;border-radius:14px;display:block}
+.cover img{width:72%;max-width:340px;margin:0 auto 10px;border-radius:12px;display:block;box-shadow:0 3px 12px rgba(0,0,0,.25)}
 a{color:var(--pri)}
 </style></head><body>
 <header><button id="back" onclick="history.back()" style="display:none">&#8592;</button><h1 id="ttl">Afaan Oromoo Bible Study</h1>
@@ -46,13 +51,16 @@ function apply(){document.body.className=S.dark?'dark':'';document.body.style.fo
 function fs(d){S.size=Math.min(28,Math.max(13,S.size+d*2));save();apply()}
 function dm(){S.dark=!S.dark;save();apply()}
 function strip(h){return h.replace(/<[^>]+>/g,' ')}
+BOOKS.forEach(function(b){var a=(b.author||'').replace("Qophaa'ina:",'Kan Qopheesse:');if(!/^Kan Qopheesse/.test(a))a='Kan Qopheesse: '+a;b.author=a});
 function getBook(id){return BOOKS.find(function(b){return b.id===id})}
 function home(){
  var h='<h2>Afaan Oromoo Bible Study</h2><p class="ref">Kitaabilee Qo\'annoo Macaafa Qulqulluu</p>';
  if(!BOOKS.length)h+='<p>Kitaabni hin jiru.</p>';
+ h+='<div class="shelf">';
  BOOKS.forEach(function(b){
   h+='<a class="book" href="#b/'+b.id+'">'+(b.cover?'<img alt="" src="'+b.cover+'">':'<div class="nocover">'+b.title+'</div>')+
   '<div class="bt"><b>'+b.title+'</b><br><small>'+(b.sub||'')+' · '+b.chapters.length+' kutaa</small></div></a>'});
+ h+='</div>';
  h+='<a class="card" href="#about"><b>Waa\'ee Barreessaa</b><br><small>About the Author · Fufa Basha Hordofa</small></a>';
  h+='<a class="card" href="#credits"><b>Waa\'ee Appii</b><br><small>About the App</small></a>';
  return h}
@@ -71,10 +79,11 @@ function marks(){var h='<h2>&#9733; Mallattoo (Bookmarks)</h2>',n=0;
  S.marks.forEach(function(key){var p=key.split('/'),b=getBook(p[0]);if(!b)return;
   var c=b.chapters.find(function(x){return x.id===p[1]});if(c){n++;h+='<a class="card" href="#b/'+key+'"><b>'+c.title+'</b><br><small>'+b.title+'</small></a>'}});
  if(!n)h+='<p>Mallattoon hin jiru. &#9734; tuqi.</p>';return h}
+function zoom(src){var d=document.createElement('div');d.id='zm';d.innerHTML='<img src="'+src+'">';var x=document.createElement('button');x.id='zx';x.textContent='\u2715 Cufi';x.onclick=function(){d.remove();x.remove()};document.body.appendChild(d);document.body.appendChild(x)}
 function search(){return '<h2>Barbaadi</h2><input type="search" id="q" placeholder="Jecha barbaadi..." oninput="doSearch(this.value)"><div id="res"></div>'}
 function doSearch(q){q=q.trim().toLowerCase();var r=document.getElementById('res'),h='',n=0;
  if(q.length<2){r.innerHTML='';return}
- BOOKS.forEach(function(b){b.chapters.forEach(function(c){if(n>40)return;var t=strip(c.html),p=t.toLowerCase().indexOf(q);
+ BOOKS.forEach(function(b){b.chapters.forEach(function(c){if(n>40||c.skip)return;var t=strip(c.html),p=t.toLowerCase().indexOf(q);
   if(p>=0||c.title.toLowerCase().indexOf(q)>=0){n++;var s=t.substring(Math.max(0,p-40),p+90);
    h+='<a class="card" href="#b/'+b.id+'/'+c.id+'"><b>'+c.title+'</b><br><small>'+b.title+' · &hellip;'+s+'&hellip;</small></a>'}})});
  r.innerHTML=h||'<p>Homaa hin argamne.</p>'}
@@ -98,7 +107,7 @@ function about(){return '<h2>Waa\'ee Barreessaa</h2><p class="ref">About the Aut
  '<li><b>Phone:</b> <a href="tel:0922202240">0922202240</a></li></ul>'+
  '<p><b>Prepared and presented by:</b><br>Fufa Basha Hordofa<br>Finfinnee, Oromiyaa, Ethiopia<br>2026</p>'}
 function credits(){var h='<h2>Waa\'ee Appii</h2><p><b>Afaan Oromoo Bible Study</b></p><p>Appii kun kitaabilee qo\'annoo Macaafa Qulqulluu Afaan Oromootiin qophaa\'an walitti qaba.</p>'+
- '<p><b>Qophaa\'ina fi Gulaalcha:</b> <a href="#about">Fufa Basha Hordofa</a></p><h3>Kitaabilee</h3><ul>';
+ '<p><b>Kan Qopheesse:</b> <a href="#about">Fufa Basha Hordofa</a></p><h3>Kitaabilee</h3><ul>';
  BOOKS.forEach(function(b){h+='<li><b>'+b.title+'</b> — '+(b.author||'')+'</li>'});
  return h+'</ul><p class="ref">Mul 22:20 — "Dafeen dhufa, Ameen Gooftaa Yesuus dafii koottu!"</p>'}
 function route(){
